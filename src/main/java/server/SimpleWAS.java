@@ -50,7 +50,6 @@ public class SimpleWAS {
     private static void startServer() {
         try (ServerSocket serverSocket = new ServerSocket(serverPort)) {
             logger.info("Server started on port {}", serverPort);
-
             while (true) {
                 try {
                     Socket clientSocket = serverSocket.accept();
@@ -59,7 +58,6 @@ public class SimpleWAS {
                     logger.error("Error accepting client connection", e);
                 }
             }
-
         } catch (IOException e) {
             logger.error("Failed to start server", e);
         }
