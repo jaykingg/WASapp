@@ -1,10 +1,10 @@
-package handler;
+package http;
 
 import java.io.PrintWriter;
 import java.io.Writer;
 
 public class HttpResponse {
-    private PrintWriter out;
+    private final PrintWriter out;
 
     public HttpResponse(PrintWriter out) {
         this.out = out;
@@ -27,14 +27,6 @@ public class HttpResponse {
         setContentType("text/html");
         out.println();
         out.println("<html><body><h1>" + message + "</h1></body></html>");
-    }
-
-    public void flush() {  // 수정: 응답을 플러시하는 메서드 추가
-        out.flush();
-    }
-
-    public void close() {  // 수정: 출력 스트림을 클로즈하는 메서드 추가
-        out.close();
     }
 
     private String getReasonPhrase(int statusCode) {

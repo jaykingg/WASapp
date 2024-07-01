@@ -2,6 +2,10 @@ package handler;
 
 import config.ConfigManager;
 import config.HostConfig;
+import http.HttpRequest;
+import http.HttpResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -10,6 +14,7 @@ import java.io.PrintWriter;
 import java.net.Socket;
 
 public class ClientHandler implements Runnable {
+    private static final Logger logger = LoggerFactory.getLogger(ClientHandler.class);
     private final Socket clientSocket;
 
     public ClientHandler(Socket clientSocket) {
@@ -35,7 +40,7 @@ public class ClientHandler implements Runnable {
             RequestHandler.handleRequest(request, response, hostConfig);
 
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Error handling client request", e);
         }
     }
 }

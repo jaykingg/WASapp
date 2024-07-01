@@ -1,18 +1,19 @@
 package handler;
 
 import config.HostConfig;
+import http.HttpRequest;
+import http.HttpResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import servlet.CurrentTimeServlet;
 import servlet.SimpleServlet;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 
 public class RequestHandler {
+    private static final Logger logger = LoggerFactory.getLogger(RequestHandler.class);
     private static final Map<String, SimpleServlet> servlets = new HashMap<>();
 
     static {
@@ -33,7 +34,7 @@ public class RequestHandler {
             return;
         }
 
-        File file = new File(hostConfig.getRoot() + path);
+        File file = new File(hostConfig.getHttp_root() + path);
         if (!file.exists()) {
             res.sendError(404, "Not Found");
             return;
@@ -50,6 +51,7 @@ public class RequestHandler {
                 writer.println(responseLine);
             }
         } catch (IOException e) {
+            logger.error("Error Internal Server Error", e);
             res.sendError(500, "Internal Server Error");
         }
     }

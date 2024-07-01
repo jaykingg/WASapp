@@ -21,12 +21,12 @@ public class ConfigManager {
         JSONObject hosts = config.getJSONObject("hosts");
         for (String hostName : hosts.keySet()) {
             JSONObject hostConfig = hosts.getJSONObject(hostName);
-            String root = hostConfig.getString("root");
+            String http_root = hostConfig.getString("http_root");
             JSONObject errors = hostConfig.getJSONObject("errors");
             String error403 = errors.getString("403");
             String error404 = errors.getString("404");
             String error500 = errors.getString("500");
-            hostConfigs.put(hostName, new HostConfig(root, error403, error404, error500));
+            hostConfigs.put(hostName, new HostConfig(http_root, error403, error404, error500));
         }
     }
 

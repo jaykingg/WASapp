@@ -1,4 +1,4 @@
-package handler;
+package http;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -6,11 +6,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class HttpRequest {
+    private final Map<String, String> headers;
+    private final Map<String, String> parameters;
     private String method;
     private String url;
     private String version;
-    private Map<String, String> headers;
-    private Map<String, String> parameters;
 
     public HttpRequest(BufferedReader in) throws IOException {
         headers = new HashMap<>();
@@ -21,12 +21,12 @@ public class HttpRequest {
     private void parseRequest(BufferedReader in) throws IOException {
         String requestLine = in.readLine();
         if (requestLine == null || requestLine.isEmpty()) {
-            throw new IOException("Invalid request line: " + requestLine);  // 수정: 예외 던지기
+            throw new IOException("Invalid request : " + requestLine);
         }
 
         String[] requestParts = requestLine.split(" ");
-        if (requestParts.length < 3) {  // 수정: 요청 라인의 유효성 검사 추가
-            throw new IOException("Invalid request line: " + requestLine);
+        if (requestParts.length < 3) {
+            throw new IOException("Invalid request : " + requestLine);
         }
 
         method = requestParts[0];
@@ -34,7 +34,7 @@ public class HttpRequest {
         version = requestParts[2];
 
         String line;
-        while ((line = in.readLine()) != null && !line.isEmpty()) {  // 수정: 헤더 라인의 유효성 검사 추가
+        while ((line = in.readLine()) != null && !line.isEmpty()) {
             int colonIndex = line.indexOf(": ");
             if (colonIndex != -1) {
                 String headerName = line.substring(0, colonIndex).trim();
@@ -49,7 +49,7 @@ public class HttpRequest {
             String[] paramPairs = urlParts[1].split("&");
             for (String pair : paramPairs) {
                 String[] keyValue = pair.split("=");
-                if (keyValue.length == 2) {  // 수정: 쿼리 파라미터의 유효성 검사 추가
+                if (keyValue.length == 2) {
                     parameters.put(keyValue[0], keyValue[1]);
                 }
             }

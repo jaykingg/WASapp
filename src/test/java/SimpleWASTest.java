@@ -33,7 +33,7 @@ public class SimpleWASTest {
 
     @Test
     public void testHelloServlet() throws IOException {
-        Socket socket = new Socket("localhost", 8000);
+        Socket socket = new Socket("localhost", 8080);
         PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
         BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         out.println("GET /CurrenTime HTTP/1.1");
@@ -49,7 +49,7 @@ public class SimpleWASTest {
 
         System.out.println(response);
 
-        Assert.assertTrue(response.toString().contains("Hello, jayking"));
+        Assert.assertTrue(response.toString().contains("CurrentTime: "));
 
         in.close();
         out.close();

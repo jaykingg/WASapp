@@ -1,7 +1,7 @@
 package servlet;
 
-import handler.HttpRequest;
-import handler.HttpResponse;
+import http.HttpRequest;
+import http.HttpResponse;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;

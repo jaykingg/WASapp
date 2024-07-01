@@ -1,7 +1,7 @@
 package servlet;
 
-import handler.HttpRequest;
-import handler.HttpResponse;
+import http.HttpRequest;
+import http.HttpResponse;
 
 public interface SimpleServlet {
     void service(HttpRequest req, HttpResponse res);
