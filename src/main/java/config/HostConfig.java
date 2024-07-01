@@ -1,19 +1,21 @@
 package config;
 
-public class HostConfig {
-    String http_root;
-    String error403;
-    String error404;
-    String error500;
+import java.util.Map;
 
-    HostConfig(String http_root, String error403, String error404, String error500) {
-        this.http_root = http_root;
-        this.error403 = error403;
-        this.error404 = error404;
-        this.error500 = error500;
+public class HostConfig {
+    private final String httpRoot;
+    private final Map<String, Object> errorPages;
+
+    public HostConfig(String httpRoot, Map<String, Object> errorPages) {
+        this.httpRoot = httpRoot;
+        this.errorPages = errorPages;
     }
 
-    public String getHttp_root() {
-        return http_root;
+    public String getHttpRoot() {
+        return httpRoot;
+    }
+
+    public String getErrorPage(String statusCode) {
+        return (String) errorPages.get(statusCode);
     }
 }
