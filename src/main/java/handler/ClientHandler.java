@@ -19,12 +19,13 @@ public class ClientHandler implements Runnable {
     @Override
     public void run() {
         try (BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+
              PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true)) {
 
             HttpRequest request = new HttpRequest(in);
             HttpResponse response = new HttpResponse(out);
 
-            String hostHeader = request.getHeader("Host");
+            String hostHeader = request.getHeader("Host").split(":")[0];
             if (hostHeader == null || !ConfigManager.getHostConfigs().containsKey(hostHeader)) {
                 response.sendError(404, "Not Found");
                 return;

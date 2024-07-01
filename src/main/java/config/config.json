@@ -1,8 +1,8 @@
 {
-  "port": 8000,
+  "port": 8080,
   "hosts": {
     "localhost": {
-      "root": "www",
+      "root": "src/main/resources",
       "errors": {
         "403": "403.html",
         "404": "404.html",

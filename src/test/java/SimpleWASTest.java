@@ -36,7 +36,7 @@ public class SimpleWASTest {
         Socket socket = new Socket("localhost", 8000);
         PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
         BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        out.println("GET /Hello?name=jayking HTTP/1.1");
+        out.println("GET /CurrenTime HTTP/1.1");
         out.println("Host: localhost");
         out.println();
         out.flush();

@@ -2,7 +2,6 @@ package handler;
 
 import config.HostConfig;
 import servlet.CurrentTimeServlet;
-import servlet.HelloServlet;
 import servlet.SimpleServlet;
 
 import java.io.BufferedReader;
@@ -17,34 +16,34 @@ public class RequestHandler {
     private static final Map<String, SimpleServlet> servlets = new HashMap<>();
 
     static {
-        servlets.put("/Hello", new HelloServlet());
         servlets.put("/CurrentTime", new CurrentTimeServlet());
     }
 
     public static void handleRequest(HttpRequest req, HttpResponse res, HostConfig hostConfig) {
-        if (servlets.containsKey(req.getUrl())) {
-            SimpleServlet servlet = servlets.get(req.getUrl());
+        String path = req.getUrl().split("\\?")[0]; // 쿼리 파라미터 제거
+
+        if (servlets.containsKey(path)) {
+            SimpleServlet servlet = servlets.get(path);
             servlet.service(req, res);
             return;
         }
 
-        File file = new File(hostConfig.getRoot() + req.getUrl());
-        if (!file.exists()) {
-            res.sendError(404, "Not Found");
+        if (path.contains("../") || path.endsWith(".exe")) {
+            res.sendError(403, "Forbidden");
             return;
         }
 
-        // 보안 규칙 처리
-        if (req.getUrl().contains("../") || req.getUrl().endsWith(".exe")) {
-            res.sendError(403, "Forbidden");
+        File file = new File(hostConfig.getRoot() + path);
+        if (!file.exists()) {
+            res.sendError(404, "Not Found");
             return;
         }
 
         try (BufferedReader fileReader = new BufferedReader(new FileReader(file))) {
             String responseLine;
             PrintWriter writer = (PrintWriter) res.getWriter();
-            writer.println("HTTP/1.1 200 OK");
-            writer.println("Content-Type: text/html; charset=UTF-8");
+            res.setStatus(200);
+            res.setContentType("text/html");
             writer.println();
 
             while ((responseLine = fileReader.readLine()) != null) {

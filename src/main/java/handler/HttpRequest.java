@@ -21,19 +21,25 @@ public class HttpRequest {
     private void parseRequest(BufferedReader in) throws IOException {
         String requestLine = in.readLine();
         if (requestLine == null || requestLine.isEmpty()) {
-            return;
+            throw new IOException("Invalid request line: " + requestLine);  // 수정: 예외 던지기
         }
 
         String[] requestParts = requestLine.split(" ");
+        if (requestParts.length < 3) {  // 수정: 요청 라인의 유효성 검사 추가
+            throw new IOException("Invalid request line: " + requestLine);
+        }
+
         method = requestParts[0];
         url = requestParts[1];
         version = requestParts[2];
 
         String line;
-        while (!(line = in.readLine()).isEmpty()) {
+        while ((line = in.readLine()) != null && !line.isEmpty()) {  // 수정: 헤더 라인의 유효성 검사 추가
             int colonIndex = line.indexOf(": ");
             if (colonIndex != -1) {
-                headers.put(line.substring(0, colonIndex), line.substring(colonIndex + 2));
+                String headerName = line.substring(0, colonIndex).trim();
+                String headerValue = line.substring(colonIndex + 2).trim();
+                headers.put(headerName, headerValue);
             }
         }
 
@@ -43,7 +49,9 @@ public class HttpRequest {
             String[] paramPairs = urlParts[1].split("&");
             for (String pair : paramPairs) {
                 String[] keyValue = pair.split("=");
-                parameters.put(keyValue[0], keyValue[1]);
+                if (keyValue.length == 2) {  // 수정: 쿼리 파라미터의 유효성 검사 추가
+                    parameters.put(keyValue[0], keyValue[1]);
+                }
             }
         }
     }
