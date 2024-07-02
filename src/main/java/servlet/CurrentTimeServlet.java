@@ -11,6 +11,10 @@ public class CurrentTimeServlet implements SimpleServlet {
     @Override
     public void service(HttpRequest req, HttpResponse res) {
         PrintWriter writer = res.getWriter();
+        res.getWriter().println("HTTP/1.1 200 OK");
+        res.getWriter().println("Content-Type: " + "text/html");
+        res.getWriter().println();
         writer.write("Current time: " + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
+        writer.flush();
     }
 }

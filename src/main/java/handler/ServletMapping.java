@@ -13,6 +13,10 @@ public class ServletMapping {
         servlets.put("/CurrentTime", new CurrentTimeServlet());
     }
 
+    public static void addServlet(String url, SimpleServlet servlet) {
+        servlets.put(url, servlet);
+    }
+
     public static SimpleServlet getServlet(String url) {
         return servlets.get(url);
     }

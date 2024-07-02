@@ -7,10 +7,15 @@ import http.HttpResponse;
 import http.HttpResponseImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import server.SimpleWAS;
 import servlet.SimpleServlet;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.net.Socket;
 
 public class ClientHandler implements Runnable {
@@ -25,7 +30,7 @@ public class ClientHandler implements Runnable {
     @Override
     public void run() {
         try (BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-             PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true)) {
+             OutputStream outStream = clientSocket.getOutputStream()) {
 
             String requestLine = in.readLine();
             if (requestLine != null && requestLine.startsWith("GET")) {
@@ -33,32 +38,33 @@ public class ClientHandler implements Runnable {
                 String url = tokens[1];
                 String host = getHost(in);
 
-                HostConfig hostConfig = SimpleWAS.hostConfigs.get(host);
+                HostConfig hostConfig = server.SimpleWAS.hostConfigs.get(host);
                 if (hostConfig == null) {
-                    sendError(out, 404, "Not Found", hostConfig);
+                    sendError(outStream, 404, "Not Found", null);
                     return;
                 }
 
                 if (isAccessForbidden(url, hostConfig)) {
-                    sendError(out, 403, "Forbidden", hostConfig);
+                    sendError(outStream, 403, "Forbidden", hostConfig);
                     return;
                 }
 
                 SimpleServlet servlet = ServletMapping.getServlet(url);
                 if (servlet != null) {
-                    HttpRequest req = new HttpRequestImpl(in, tokens);
-                    HttpResponse res = new HttpResponseImpl(out);
+                    HttpRequest req = new HttpRequestImpl();
+                    HttpResponse res = new HttpResponseImpl(outStream);
                     servlet.service(req, res);
                 } else {
                     File file = new File(hostConfig.getHttpRoot() + url);
                     if (!file.exists()) {
-                        sendError(out, 404, "Not Found", hostConfig);
+                        sendError(outStream, 404, "Not Found", hostConfig);
                         return;
                     }
-                    sendFile(out, file);
+
+                    sendFile(outStream, file);
                 }
             } else {
-                sendError(out, 400, "Bad Request", null);
+                sendError(outStream, 400, "Bad Request", null);
             }
 
         } catch (IOException e) {
@@ -79,44 +85,64 @@ public class ClientHandler implements Runnable {
         return null;
     }
 
-    private void sendError(PrintWriter out, int code, String message, HostConfig hostConfig) {
-        out.println("HTTP/1.1 " + code + " " + message);
-        out.println("Content-Type: text/html");
-        out.println();
+    private void sendError(OutputStream out, int code, String message, HostConfig hostConfig) throws IOException {
+        PrintWriter writer = new PrintWriter(out);
+        writer.println("HTTP/1.1 " + code + " " + message);
+        writer.println("Content-Type: text/html");
+        writer.println();
 
         String errorPage = (hostConfig != null) ? hostConfig.getErrorPage(String.valueOf(code)) : null;
         if (errorPage != null) {
-            File file = new File(hostConfig.getHttpRoot() + "/" + errorPage);
+            File file = new File("resources/" + errorPage);
             if (file.exists()) {
-                try (BufferedReader fileReader = new BufferedReader(new FileReader(file))) {
-                    String line;
-                    while ((line = fileReader.readLine()) != null) {
-                        out.println(line);
-                    }
-                } catch (IOException e) {
-                    logger.error("Error reading error page file", e);
-                }
+                sendFile(out, file);
                 return;
             }
         }
 
-        out.println("<html><body><h1>" + code + " " + message + "</h1></body></html>");
+        writer.println("<html><body><h1>" + code + " " + message + "</h1></body></html>");
+        writer.flush();
     }
 
-    private void sendFile(PrintWriter out, File file) throws IOException {
-        out.println("HTTP/1.1 200 OK");
-        out.println("Content-Type: text/html");
-        out.println();
+    private void sendFile(OutputStream out, File file) throws IOException {
+        String contentType = getContentType(file);
+        PrintWriter writer = new PrintWriter(out);
+        writer.println("HTTP/1.1 200 OK");
+        writer.println("Content-Type: " + contentType);
+        writer.println();
 
         BufferedReader fileReader = new BufferedReader(new FileReader(file));
         String line;
         while ((line = fileReader.readLine()) != null) {
-            out.println(line);
+            writer.println(line);
         }
         fileReader.close();
+        writer.flush();
+    }
+
+    private String getContentType(File file) {
+        String fileName = file.getName();
+        if (fileName.endsWith(".html") || fileName.endsWith(".htm")) {
+            return "text/html";
+        } else if (fileName.endsWith(".css")) {
+            return "text/css";
+        } else if (fileName.endsWith(".js")) {
+            return "application/javascript";
+        } else if (fileName.endsWith(".json")) {
+            return "application/json";
+        } else if (fileName.endsWith(".png")) {
+            return "image/png";
+        } else if (fileName.endsWith(".jpg") || fileName.endsWith(".jpeg")) {
+            return "image/jpeg";
+        } else {
+            return "text/plain";
+        }
     }
 
     private boolean isAccessForbidden(String url, HostConfig hostConfig) {
-        return url.contains("..") || url.endsWith(".exe");
+        if (url.contains("..") || url.endsWith(".exe")) {
+            return true;
+        }
+        return false;
     }
 }
